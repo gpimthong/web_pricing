@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ราคาขาย</title>
+    <style>
+      #container {
+        display: flex;
+        width: 100%;
+        height: 500px;
+      }
+      .price-up {
+        color: red;
+      }
+      .price-down {
+        color: green;
+      }
+      .price-down,
+      .price-up {
+        font-weight: bold;
+        border: 4px solid rgb(12, 125, 177);
+      }
+
+      #table1,
+      #table2 {
+        overflow: auto;
+      }
+      #my-table1,
+      #my-table2,
+      #my-table3 {
+        border-collapse: collapse;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid black;
+      }
+
+      td {
+        border: 1px solid rgb(0, 0, 0);
+        white-space: nowrap;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: auto auto;
+        grid-template-rows: 30px 500px;
+        gap: 5px;
+        background-color: #ffffff;
+        padding: 5px;
+        margin: 20px auto 20px;
+      }
+
+      .grid-container > div {
+        background-color: rgba(255, 255, 255, 0.8);
+        text-align: center;
+        padding: 5px 0;
+        font-size: 1rem;
+      }
+      #table3 {
+        grid-column-end: span 2;
+        /* height: 100vh; */
+        align-items: center;
+        width: 100%;
+        margin: 20px auto 20px;
+      }
+      #my-table3 {
+        font-size: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HTML code -->
+    <input type="file" id="inputfiles" multiple onchange="readFiles(event)" />
+    <input type="file" id="inputfile1" onchange="File1_input(event)" hidden />
+    <input type="file" id="inputfile2" onchange="File2_input(event)" hidden />
+    <input
+      type="submit"
+      id="showtable"
+      value="คำนวณ"
+      onclick="showtable()"
+      hidden
+    />
+    <label for="margin">Margin</label>
+    <input type="text" id="margin" value="10" />
+    <div class="grid-container" id="-container">
+      <div class="label">สินค้าที่รับ</div>
+      <div class="label">สินค้าทั้งหมด</div>
+      <div id="table1" name="data1"></div>
+      <div id="table2" name="data2"></div>
+      <div id="table3" name="data3"><p>ราคาขาย</p></div>
+    </div>
+
+    <script>
+      const file_1_header = [1, 14, 15, 18, 20, 21]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
+      const file_2_header = [1, 2, 5]; //Array.from(Array(50).keys()); //[1, 2, 3, 4, 5];
+
+      //console.log(file_1_header.includes(5));
+
+      let table_data = {};
+      table_data.data0 = {};
+      table_data.data1 = {};
+
+      //var progress = document.getElementById("progress");
+      var linesRead = 0;
+
+      let items = [];
+
+      function File1_input(e) {
+        // get the list of files objects
+        let files = e.target.files;
+        console.log(files);
+      }
+      function File2_input(e) {
+        // get the list of files objects
+        let files = e.target.files;
+        console.log(files);
+      }
+
+      function showtable() {
+        var file1 = document.getElementById("inputfile1");
+        var file2 = document.getElementById("inputfile2");
+
+        if (file1 && file2) {
+          console.log(file1.length);
+        } else alert("no file selected");
+      }
+
+      function readFiles(event) {
+        // get the list of files objects
+        let files = event.target.files;
+
+        // check if there are exactly two files selected
+        if (files.length != 2) {
+          alert("เลือก 2 ไฟล์เท่านั้น");
+          return;
+        }
+
+        let file1_size = files[0].size;
+        let file2_size = files[1].size;
+        console.log(file1_size);
+        console.log(file2_size);
+
+        let file_array = [];
+
+        /*        if (file1_size > file2_size) {
+          file_array = files;
+          files[0] = file_array[1];
+          files[1] = file_array[0];
+          console.log(files);
+        } */
+
+        // create an array to store all texts
+        let texts = [];
+
+        // create an array to store all readers
+        let readers = [];
+
+        let progess = [];
+
+        // loop through each file object and create a reader for each one
+        for (let i = 0; i < files.length; i++) {
+          readers[i] = new FileReader();
+          //progess[i] = document.getElementById("progress" + i);
+        }
+
+        // define a function to check if all files are loaded and then display them in separate tables
+        function checkAllLoaded() {
+          if (texts.length == files.length) {
+            displayTables();
+          }
+        }
+
+        // define a function to display each text in a separate table
+        function displayTables() {
+          // loop through each text
+          for (let i = 0; i < texts.length; i++) {
+            // get the corresponding table element by its id
+            let table = document.getElementById("table" + (i + 1));
+
+            // Create a table element
+            var mytable = document.createElement("table");
+
+            // Create a table head element
+            var thead = document.createElement("thead");
+            var tbody = document.createElement("tbody");
+
+            // Append the head to the table
+            mytable.appendChild(thead);
+            // Append the body to the table
+            mytable.appendChild(tbody);
+
+            // Set the id attribute of the table
+            mytable.setAttribute("id", "my-table" + (i + 1));
+
+            // split the text by line breaks
+            let lines = texts[i].split("\n");
+
+            // loop through each line
+            let n = 0;
+
+            for (let j = 0; j < lines.length; j++) {
+              //linesRead++;
+              //progress.value = linesRead / lines.length;
+
+              // split the line by tabs
+              let cells = lines[j].split("\t");
+
+              if (cells.length > 1) {
+                //Keeping barcode of a new items
+                if (i == 0 && j > 0) {
+                  //store item of today
+                  items.push(cells[14]); //barcode at column-14
+                }
+                //-----------------------
+
+                if (
+                  i == 0 ||
+                  (i == 1 && j == 0) ||
+                  (i == 1 && items.includes(cells[1]))
+                ) {
+                  //Create ID Column on the left most
+                  // Add some content to the head cells
+                  //cell1.innerHTML = j;
+
+                  //This is just for JSON object
+                  if (i == 0) {
+                    table_data.data0[j] = cells;
+                  }
+
+                  if (i == 1) {
+                    //cell1.innerHTML = n + "-" + j;
+                    table_data.data1[n] = cells;
+                    n++;
+                  }
+                  //-------------------------
+
+                  // loop through each cell
+                  c = 0;
+
+                  if (j == 0) {
+                    var headRow = thead.insertRow(0);
+                    headRow.insertCell(0);
+                  } else {
+                    var bodyRow = tbody.insertRow(-1);
+                    var bodyCell0 = bodyRow.insertCell(0);
+                    bodyCell0.innerHTML = j;
+                    if (i == 1) bodyCell0.innerHTML = String(n - 1) + "-" + j;
+                  }
+
+                  for (let k = 0; k < cells.length; k++) {
+                    //this is header
+                    if (j == 0) {
+                      if (
+                        (file_1_header.includes(k) && i == 0) ||
+                        (file_2_header.includes(k) && i == 1)
+                      ) {
+                        // Create a row for the head
+
+                        // set the cell text content
+                        //td.textContent = String(k) + "_" + cells[k];
+                        // Create two rows for the body
+                        var cell1 = headRow.insertCell(-1);
+                        cell1.innerHTML = String(k) + "_" + cells[k];
+                      }
+                    } else {
+                      if (
+                        (file_1_header.includes(k) && i == 0) ||
+                        (file_2_header.includes(k) && i == 1)
+                      ) {
+                        var bodyCell1 = bodyRow.insertCell(-1);
+                        // set the cell text content
+                        bodyCell1.innerHTML = cells[k];
+                        //add id to old price
+                        if (i == 1 && k == 5) {
+                          bodyCell1.setAttribute("id", cells[1]);
+                          //bodyCell1.setAttribute("class", "price-up");
+                        }
+                      }
+                    }
+                  }
+
+                  // append the row to the table
+                  //table.appendChild(tr);
+                }
+              }
+              //console.log(items);
+            }
+            // Append the table to the document body
+            table.appendChild(mytable);
+          }
+
+          /***
+           *  prepare for table3
+           * **/
+          let table3 = document.getElementById("table3");
+          // Create a table element
+          var mytable3 = document.createElement("table");
+
+          // Create a table head element
+          var thead3 = document.createElement("thead");
+          var tbody3 = document.createElement("tbody");
+          // Append the head to the table
+          mytable3.appendChild(thead3);
+          // Append the body to the table
+          mytable3.appendChild(tbody3);
+
+          // Set the id attribute of the table
+          mytable3.setAttribute("id", "my-table3");
+          const dMargin = parseFloat(document.getElementById("margin").value);
+
+          var headRow = thead3.insertRow(0);
+          var cell1 = headRow.insertCell(0);
+          cell1.innerHTML = "No.";
+          headRow.insertCell(-1).innerHTML = "รหัส";
+          headRow.insertCell(-1).innerHTML = "รายการ";
+          headRow.insertCell(-1).innerHTML = "รวมเงิน";
+          headRow.insertCell(-1).innerHTML = "รับ";
+          headRow.insertCell(-1).innerHTML = "ทุนใหม่";
+          headRow.insertCell(-1).innerHTML = "ทุนเก่า";
+          headRow.insertCell(-1).innerHTML = "%";
+          headRow.insertCell(-1).innerHTML = "ขายใหม่";
+          headRow.insertCell(-1).innerHTML = "ขายเก่า";
+          var n = 0;
+          for (item in table_data.data0) {
+            if (n > 0) {
+              var bodyRow = tbody3.insertRow(-1);
+              var barcode = table_data.data0[item][14];
+
+              bodyRow.insertCell(-1).innerHTML = n;
+              bodyRow.insertCell(-1).innerHTML = barcode; // "รหัส";
+              bodyRow.insertCell(-1).innerHTML = table_data.data0[item][15]; // "รายการ";
+              bodyRow.insertCell(-1).innerHTML = parseFloat(
+                table_data.data0[item][21]
+              ).toFixed(2); // "รวมเงิน";
+              bodyRow.insertCell(-1).innerHTML = parseFloat(
+                table_data.data0[item][18]
+              ).toFixed(1); // "รับ";
+
+              let id_old_base = document.getElementById(barcode);
+
+              if (id_old_base) {
+                var old_base = parseFloat(id_old_base.innerHTML);
+              } else {
+                var old_base = -999;
+              }
+
+              var new_base = parseFloat(table_data.data0[item][20]).toFixed(2);
+
+              var new_sell = (new_base * (1 + dMargin * 0.01)).toFixed(2);
+              var old_sell = (old_base * (1 + dMargin * 0.01)).toFixed(2);
+
+              var bodyCell1 = bodyRow.insertCell(-1);
+              bodyCell1.innerHTML = new_base; // "ทุนใหม่";
+              bodyRow.insertCell(-1).innerHTML = old_base; // "ทุนเก่า";
+
+              bodyRow.insertCell(-1).innerHTML = dMargin; // "%";
+
+              var bodyCell2 = bodyRow.insertCell(-1);
+              bodyCell2.innerHTML = new_sell; // "ขายใหม่";
+              bodyRow.insertCell(-1).innerHTML = old_sell; // "ขายเก่า";
+
+              if (new_base > old_base) {
+                bodyCell2.setAttribute("class", "price-up");
+              } else if (new_base < old_base) {
+                bodyCell2.setAttribute("class", "price-down");
+              }
+            }
+            n++;
+          }
+
+          table3.appendChild(mytable3);
+
+          //console.table(table_data.data0);
+          //console.table(table_data.data1);
+          /**
+           *-----------------------------
+           **/
+
+          syncScroll();
+        }
+
+        function syncScroll() {
+          var table1 = document.getElementById("table1");
+          var table2 = document.getElementById("table2");
+
+          var scrollHandler = function (e) {
+            var source = e.target;
+            var target = source == table1 ? table2 : table1;
+            target.scrollTop = source.scrollTop;
+          };
+
+          table1.addEventListener("scroll", scrollHandler);
+          table2.addEventListener("scroll", scrollHandler);
+        }
+
+        for (let i = 0; i < readers.length; i++) {
+          readers[i].onload = function (e) {
+            //console.log(e.target.result);
+            texts.push(e.target.result);
+            checkAllLoaded();
+          };
+
+          readers[i].readAsText(files[i]);
+        }
+
+        //This version to make sure to read file in sequence
+        /*         function next_load(r, f) {
+          readers[r].onload = function (e) {
+            texts.push(e.target.result);
+          };
+          readers[r].readAsText(files[f]);
+        }
+
+        if (file1_size > file2_size) {
+          readers[1].onload = function (e) {
+            console.log("load case1");
+            texts.push(e.target.result);
+            next_load(0, 1);
+          };
+          reders[1].readAsText(files[0]);
+        } else {
+          readers[0].onload = function (e) {
+            console.log("load case2");
+            texts.push(e.target.result);
+            next_load(1, 1);
+          };
+          readers[0].readAsText(files[0]);
+        } */
+      }
+    </script>
+  </body>
+</html>
