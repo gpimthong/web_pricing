@@ -109,7 +109,7 @@
   <label class="no-print" for="margin">Margin</label>
   <input class="no-print" type="text" id="margin" value="10" />
 
-
+  <hr class="no-print">
   <p>วันที่ : <span id="current-date"></span></p>
 
   <div class="grid-container" id="-container">
@@ -125,7 +125,7 @@
     const file_1_header = [1, 14, 15, 18, 20, 21]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
     const file_2_header = [1, 2, 4, 5]; //[Array.from(Array(50).keys()); //1, 2, 3, 4, 5];
 
-    //console.log(file_1_header.includes(5));
+    addDate();
 
     let table_data = {};
     table_data.data0 = {};
@@ -440,11 +440,7 @@
 
 
 
-        n = new Date();
-        y = 543 + n.getFullYear();
-        m = n.getMonth() + 1;
-        d = n.getDate();
-        document.getElementById("current-date").innerHTML = d + "/" + m + "/" + y;
+
 
 
         //console.table(table_data.data0);
@@ -455,6 +451,7 @@
 
         syncScroll();
         addevent();
+        addDate();
       }
 
       function syncScroll() {
@@ -555,6 +552,14 @@
         });
       })
 
+    }
+
+    function addDate() {
+      n = new Date();
+      y = 543 + n.getFullYear();
+      m = n.getMonth() + 1;
+      d = n.getDate();
+      document.getElementById("current-date").innerHTML = d + "/" + m + "/" + y;
     }
   </script>
 </body>
