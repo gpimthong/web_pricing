@@ -108,6 +108,10 @@
 
   <label class="no-print" for="margin">Margin</label>
   <input class="no-print" type="text" id="margin" value="10" />
+
+
+  <p>วันที่ : <span id="current-date"></span></p>
+
   <div class="grid-container" id="-container">
     <!-- <div class="label">สินค้าที่รับ</div>
                 <div class="label">สินค้าทั้งหมด</div> -->
@@ -433,6 +437,15 @@
         }
 
         table3.appendChild(mytable3);
+
+
+
+        n = new Date();
+        y = 543 + n.getFullYear();
+        m = n.getMonth() + 1;
+        d = n.getDate();
+        document.getElementById("current-date").innerHTML = d + "/" + m + "/" + y;
+
 
         //console.table(table_data.data0);
         //console.table(table_data.data1);
