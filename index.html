@@ -50,7 +50,7 @@
     .grid-container {
       display: grid;
       grid-template-columns: auto auto;
-      grid-template-rows: 30px 200px;
+      grid-template-rows: 300px 200px;
       gap: 5px;
       background-color: #ffffff;
       padding: 5px;
@@ -89,7 +89,13 @@
       border-left-style: hidden;
       border-right-style: hidden;
       border-bottom-style: hidden;
-      width: 5rem;
+
+    }
+
+    input.margin_td,
+    input#margin {
+      text-align: center;
+      width: 4rem;
     }
 
     @media print {
@@ -103,27 +109,46 @@
 </head>
 
 <body>
-  <!-- HTML code -->
+  <!-- START HTML code -->
   <input class="no-print" type="file" id="inputfiles" multiple onchange="readFiles(event)" />
-
   <label class="no-print" for="margin">Margin</label>
-  <input class="no-print" type="text" id="margin" value="10" />
-
+  <input class="no-print" id="margin" value="10" type="number" onkeypress="return isNumberKey(event)" />
   <hr class="no-print">
+
+
+
   <p>วันที่ : <span id="current-date"></span></p>
 
   <div class="grid-container" id="-container">
-    <!-- <div class="label">สินค้าที่รับ</div>
-                <div class="label">สินค้าทั้งหมด</div> -->
     <div class="no-print" id="table1" name="data1"></div>
     <div class="no-print" id="table2" name="data2"></div>
     <div id="table3" name="data3">
       <p>ราคาขาย</p>
     </div>
   </div>
+  <!-- END HTML code -->
+  <!--
+
+
+
+
+
+  -->
+  <!-- START JavaScript code -->
   <script>
+
+
+
     const file_1_header = [1, 14, 15, 18, 20, 21]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
     const file_2_header = [1, 2, 4, 5]; //[Array.from(Array(50).keys()); //1, 2, 3, 4, 5];
+
+
+    function isNumberKey(evt) {
+      var charCode = (evt.which) ? evt.which : evt.keyCode
+      if (charCode > 31 && (charCode != 46 && (charCode < 48 || charCode > 57)))
+        return false;
+      return true;
+    }
 
     addDate();
 
@@ -131,31 +156,10 @@
     table_data.data0 = {};
     table_data.data1 = {};
 
-    //var progress = document.getElementById("progress");
     var linesRead = 0;
 
     let items = [];
 
-    function File1_input(e) {
-      // get the list of files objects
-      let files = e.target.files;
-      console.log(files);
-    }
-
-    function File2_input(e) {
-      // get the list of files objects
-      let files = e.target.files;
-      console.log(files);
-    }
-
-    function showtable() {
-      var file1 = document.getElementById("inputfile1");
-      var file2 = document.getElementById("inputfile2");
-
-      if (file1 && file2) {
-        console.log(file1.length);
-      } else alert("no file selected");
-    }
 
     function readFiles(event) {
       // get the list of files objects
@@ -169,35 +173,81 @@
 
       let file1_size = files[0].size;
       let file2_size = files[1].size;
-      //console.log(file1_size);
-      //console.log(file2_size);
 
       let file_array = [];
-
-      /*        if (file1_size > file2_size) {
-        file_array = files;
-        files[0] = file_array[1];
-        files[1] = file_array[0];
-        console.log(files);
-      } */
 
       // create an array to store all texts
       let texts = [];
 
+      //Separate verion to avoid having issue of swapping file
+      let item_list = [];  //store few item for daily incoming goods
+      let all_list = []; //store all goods in store
+
       // create an array to store all readers
       let readers = [];
 
-      let progess = [];
 
       // loop through each file object and create a reader for each one
       for (let i = 0; i < files.length; i++) {
         readers[i] = new FileReader();
-        //progess[i] = document.getElementById("progress" + i);
       }
+
+
+
+
+      //var tsv is the TSV file with headers
+      function tsvJSON(tsv) {
+
+        var lines = tsv.split("\n");
+
+        var result = [];
+
+        var headers = lines[0].split("\t");
+
+        for (var i = 1; i < lines.length; i++) {
+
+          var obj = {};
+          var currentline = lines[i].split("\t");
+
+          for (var j = 0; j < headers.length; j++) {
+            obj[headers[j]] = currentline[j];
+          }
+
+          result.push(obj);
+
+        }
+
+        return JSON.stringify(result); //JSON
+
+      }
+
+      readers[0].onload = function (e) {
+        item_list = e.target.result;
+        //console.log(tsvJSON(item_list));
+        checkAllLoaded();
+      };
+
+      readers[1].onload = function (e) {
+        all_list = e.target.result;
+        checkAllLoaded();
+      };
+
+      if (file1_size < file2_size) {
+        readers[0].readAsText(files[0]);
+        readers[1].readAsText(files[1]);
+      }
+      else {
+        readers[0].readAsText(files[1]);
+        readers[1].readAsText(files[0]);
+      }
+
+
 
       // define a function to check if all files are loaded and then display them in separate tables
       function checkAllLoaded() {
-        if (texts.length == files.length) {
+        if (item_list.length != 0 && all_list.length != 0) {
+          texts.push(item_list);
+          texts.push(all_list);
           displayTables();
         }
       }
@@ -286,10 +336,7 @@
                       (file_1_header.includes(k) && i == 0) ||
                       (file_2_header.includes(k) && i == 1)
                     ) {
-                      // Create a row for the head
 
-                      // set the cell text content
-                      //td.textContent = String(k) + "_" + cells[k];
                       // Create two rows for the body
                       var cell1 = headRow.insertCell(-1);
                       cell1.innerHTML = String(k) + "_" + cells[k];
@@ -300,27 +347,24 @@
                       (file_2_header.includes(k) && i == 1)
                     ) {
                       var bodyCell1 = bodyRow.insertCell(-1);
-                      // set the cell text content
+
                       bodyCell1.innerHTML = cells[k];
                       //add id to old price
                       if (i == 1 && k == 5) {
                         bodyCell1.setAttribute("id", cells[1]);
-                        //bodyCell1.setAttribute("class", "price-up");
+
                       }
                       //add id to old sell
                       if (i == 1 && k == 4) {
                         bodyCell1.setAttribute("id", 'sell-' + cells[1]);
-                        //bodyCell1.setAttribute("class", "price-up");
+
                       }
                     }
                   }
                 }
-
-                // append the row to the table
-                //table.appendChild(tr);
               }
             }
-            //console.log(items);
+
           }
           // Append the table to the document body
           table.appendChild(mytable);
@@ -347,7 +391,7 @@
 
         var headRow = thead3.insertRow(0);
         var cell1 = headRow.insertCell(0);
-        cell1.innerHTML = "No.";
+        cell1.innerHTML = "ลำดับ";
         headRow.insertCell(-1).innerHTML = "รหัส";
         headRow.insertCell(-1).innerHTML = "รายการ";
         headRow.insertCell(-1).innerHTML = "รวมเงิน";
@@ -405,14 +449,14 @@
             bodyCell1.setAttribute("id", "old_base-" + barcode);
 
             var celledit = bodyRow.insertCell(-1);
-            //celledit.innerHTML = dMargin; // "%";
-            //celledit.setAttribute("contenteditable", "true");
-            //celledit.setAttribute("class", "margin_td");
 
 
             var input = document.createElement('input');
             input.setAttribute("class", "margin_td");
-            input.type = "text";
+            input.setAttribute("onkeypress", "return isNumberKey(event)");
+            //type = "number" onkeypress = "return isNumberKey(event)" 
+
+            input.type = "number";
             input.value = dMargin;
             input.setAttribute("id", "mg-" + barcode);
             celledit.appendChild(input);
@@ -439,12 +483,6 @@
         table3.appendChild(mytable3);
 
 
-
-
-
-
-        //console.table(table_data.data0);
-        //console.table(table_data.data1);
         /**
          *-----------------------------
          **/
@@ -468,57 +506,6 @@
         table2.addEventListener("scroll", scrollHandler);
       }
 
-      for (let i = 0; i < readers.length; i++) {
-        readers[i].onload = function (e) {
-          //console.log(e.target.result);
-          texts[i] = (e.target.result);
-          checkAllLoaded();
-        };
-
-        readers[i].readAsText(files[i]);
-      }
-
-
-
-      //console.log(texts);
-
-      //This version to make sure to read file in sequence
-      /* function next_load(r, f) {
-                readers[r].onload = function (e) {
-                  texts.push(e.target.result);
-                };
-                readers[r].readAsText(files[f]);
-              }
-            
-              if (file1_size > file2_size) {
-                readers[0].onload = function (e) {
-                  //console.log("load case1");
-                  texts.push(e.target.result);
-                };
-                readers[0].readAsText(files[1]);
-            
-                readers[1].onload = function (e) {
-                  //console.log("load case1");
-                  texts.push(e.target.result);
-                };
-                readers[1].readAsText(files[0]);
-            
-            
-              } else {
-                
-                readers[0].onload = function (e) {
-                  //console.log("load case1");
-                  texts.push(e.target.result);
-                };
-                readers[0].readAsText(files[0]);
-            
-                readers[1].onload = function (e) {
-                  //console.log("load case1");
-                  texts.push(e.target.result);
-                };
-                readers[1].readAsText(files[1]);
-            
-              }*/
 
 
 
@@ -561,6 +548,8 @@
       d = n.getDate();
       document.getElementById("current-date").innerHTML = d + "/" + m + "/" + y;
     }
+
+
   </script>
 </body>
 
