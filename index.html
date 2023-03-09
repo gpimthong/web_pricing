@@ -135,8 +135,10 @@
 
 
 
-  <p><span id="topic">ทำราคาขาย</span>เลขบิล :<span id="otfb"></span> วันที่ : <span id="current-date"></span><span
-      id="fname"></span></p>
+  <p id="incoming-doc"><span id="topic">ทำราคาขาย</span>เลขบิล :<span id="bill-no"></span> วันที่ : <span
+      id="current-date"></span></p>
+
+  <p id="outgoing-doc">วันที่ : <span id="current-date"></span><span id="fname"></span><span id="otfb"></span></p>
 
   <div class="grid-container" id="-container">
     <div class="no-print" id="table1" name="data1"></div>
@@ -156,10 +158,11 @@
   <!-- START JavaScript code -->
   <script>
 
-
+    var bill_doc = false;
 
     const file_1_header = [1, 14, 15, 18, 20, 21]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
     const file_2_header = [1, 2, 4, 5]; //[Array.from(Array(50).keys()); //1, 2, 3, 4, 5];
+    const file_sell_header = [1, 2, 15, 17, 20, 35]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
 
 
     function isNumberKey(evt) {
@@ -242,7 +245,7 @@
 
       readers[0].onload = function (e) {
         item_list = e.target.result;
-        //console.log(tsvJSON(item_list));
+
         checkAllLoaded();
       };
 
@@ -271,8 +274,21 @@
         }
       }
 
+
+
+
+
+
       // define a function to display each text in a separate table
       function displayTables() {
+
+        //check what kind of file here
+        var bill_no = texts[0].split('\n')[2].split('\t')[2];
+        let reg = /otfb/i;
+        if (reg.exec(bill_no))
+          bill_doc = true;
+
+
         // loop through each text
         for (let i = 0; i < texts.length; i++) {
           // get the corresponding table element by its id
@@ -296,6 +312,11 @@
           // split the text by line breaks
           let lines = texts[i].split("\n");
 
+
+
+
+
+
           // loop through each line
           let n = 0;
 
@@ -310,7 +331,10 @@
               //Keeping barcode of a new items
               if (i == 0 && j > 0) {
                 //store item of today
-                items.push(cells[14]); //barcode at column-14
+                if (bill_doc)
+                  items.push(cells[15]);//barcode at column-15
+                else
+                  items.push(cells[14]); //barcode at column-14
               }
               //-----------------------
 
@@ -389,125 +413,243 @@
           table.appendChild(mytable);
         }
 
-        /***
-         *  prepare for table3
-         * **/
-        let table3 = document.getElementById("table3");
-        // Create a table element
-        var mytable3 = document.createElement("table");
 
-        // Create a table head element
-        var thead3 = document.createElement("thead");
-        var tbody3 = document.createElement("tbody");
-        // Append the head to the table
-        mytable3.appendChild(thead3);
-        // Append the body to the table
-        mytable3.appendChild(tbody3);
+        if (bill_doc) {
 
-        // Set the id attribute of the table
-        mytable3.setAttribute("id", "my-table3");
-        const dMargin = parseFloat(document.getElementById("margin").value);
+          let table3 = document.getElementById("table3");
+          // Create a table element
+          var mytable3 = document.createElement("table");
 
-        var headRow = thead3.insertRow(0);
-        var cell1 = headRow.insertCell(0);
-        cell1.innerHTML = "ลำดับ";
-        headRow.insertCell(-1).innerHTML = "รหัส";
-        headRow.insertCell(-1).innerHTML = "รายการ";
-        headRow.insertCell(-1).innerHTML = "รวมเงิน";
-        headRow.insertCell(-1).innerHTML = "รับ";
-        headRow.insertCell(-1).innerHTML = "ทุนใหม่";
-        headRow.insertCell(-1).innerHTML = "ทุนเก่า";
-        headRow.insertCell(-1).innerHTML = "%";
-        headRow.insertCell(-1).innerHTML = "ขายใหม่";
-        headRow.insertCell(-1).innerHTML = "ขายเก่า";
-        var n = 0;
-        for (item in table_data.data0) {
-          if (n > 0) {
-            var bodyRow = tbody3.insertRow(-1);
-            var barcode = table_data.data0[item][14];
+          // Create a table head element
+          var thead3 = document.createElement("thead");
+          var tbody3 = document.createElement("tbody");
+          // Append the head to the table
+          mytable3.appendChild(thead3);
+          // Append the body to the table
+          mytable3.appendChild(tbody3);
 
-            bodyRow.insertCell(-1).innerHTML = n;
-            bodyRow.insertCell(-1).innerHTML = barcode; // "รหัส";
-            var item_cell = bodyRow.insertCell(-1);
-            item_cell.innerHTML = table_data.data0[item][15]; // "รายการ";
-            item_cell.setAttribute("class", "item-cell");
+          // Set the id attribute of the table
+          mytable3.setAttribute("id", "my-table3");
 
-            bodyRow.insertCell(-1).innerHTML = parseFloat(
-              table_data.data0[item][21]
-            ).toFixed(2); // "รวมเงิน";
-            bodyRow.insertCell(-1).innerHTML = parseFloat(
-              table_data.data0[item][18]
-            ).toFixed(0); // "รับ";
 
-            let id_old_base = document.getElementById(barcode);
-            let id_old_sell = document.getElementById('sell-' + barcode);
+          var headRow = thead3.insertRow(0);
+          var cell1 = headRow.insertCell(0);
 
-            if (id_old_base) {
-              var old_base = parseFloat(id_old_base.innerHTML).toFixed(2);
-            } else {
-              var old_base = -999;
+          cell1.innerHTML = "ลำดับ";
+          headRow.insertCell(-1).innerHTML = "บาร์โค้ด";
+          headRow.insertCell(-1).innerHTML = "รายการ";
+          headRow.insertCell(-1).innerHTML = "จำนวน";
+          headRow.insertCell(-1).innerHTML = "หน่วยขาย";
+          headRow.insertCell(-1).innerHTML = "ราคาทุน";
+          headRow.insertCell(-1).innerHTML = "ราคาขาย";
+
+          var n = 0;
+          for (item in table_data.data0) {
+            if (n > 0) {
+              var bodyRow = tbody3.insertRow(-1);
+              var barcode = table_data.data0[item][15];
+
+
+              bodyRow.insertCell(-1).innerHTML = n;
+              bodyRow.insertCell(-1).innerHTML = barcode; // "บาร์โค้ด";
+
+
+              var item_cell = bodyRow.insertCell(-1);
+              item_cell.innerHTML = table_data.data0[item][17]; // "รายการ";
+              item_cell.setAttribute("class", "item-cell");
+
+
+
+              bodyRow.insertCell(-1).innerHTML = parseFloat(
+                table_data.data0[item][20]
+              ).toFixed(0); // "จำนวน";
+
+
+              bodyRow.insertCell(-1).innerHTML = table_data.data0[item][35]; // "หน่วยขาย";
+
+
+              let id_old_base = document.getElementById(barcode);
+              let id_old_sell = document.getElementById('sell-' + barcode);
+
+              if (id_old_base) {
+                var old_base = parseFloat(id_old_base.innerHTML).toFixed(2);
+              } else {
+                var old_base = -999;
+              }
+              if (id_old_sell) {
+                var old_sell = parseFloat(id_old_sell.innerHTML);
+              } else {
+                var old_sell = -999;
+              }
+
+
+              var bodyCell1 = bodyRow.insertCell(-1);
+              bodyCell1.innerHTML = old_base; // "ราคาทุน";
+              bodyCell1.setAttribute("id", "current_base-" + barcode);
+
+              bodyCell1 = bodyRow.insertCell(-1)
+              bodyCell1.innerHTML = old_sell.toFixed(2); // "ราคาขาย";
+              bodyCell1.setAttribute("id", "current_sell-" + barcode);
+
             }
-            if (id_old_sell) {
-              var old_sell = parseFloat(id_old_sell.innerHTML).toFixed(2);
-            } else {
-              var old_sell = -999;
-            }
-
-            var new_base = parseFloat(table_data.data0[item][20]).toFixed(2);
-
-            var new_sell = (new_base * (1 + dMargin * 0.01)).toFixed(2);
-            //var old_sell = (old_base * (1 + dMargin * 0.01)).toFixed(2);
-
-
-            var bodyCell1 = bodyRow.insertCell(-1);
-            bodyCell1.innerHTML = new_base; // "ทุนใหม่";
-            bodyCell1.setAttribute("id", "new_base-" + barcode);
-
-            bodyCell1 = bodyRow.insertCell(-1)
-            bodyCell1.innerHTML = old_base; // "ทุนเก่า";
-            bodyCell1.setAttribute("id", "old_base-" + barcode);
-
-            var celledit = bodyRow.insertCell(-1);
-
-
-            var input = document.createElement('input');
-            input.setAttribute("class", "margin_td");
-            input.setAttribute("onkeypress", "return isNumberKey(event)");
-            //type = "number" onkeypress = "return isNumberKey(event)" 
-
-            input.type = "number";
-            input.value = dMargin;
-            input.setAttribute("id", "mg-" + barcode);
-            celledit.appendChild(input);
-
-
-            var bodyCell2 = bodyRow.insertCell(-1);
-            bodyCell2.innerHTML = Math.round(new_sell); // "ขายใหม่";
-            bodyCell2.setAttribute("id", "new_sell-" + barcode);
-
-
-            bodyCell2 = bodyRow.insertCell(-1);
-            bodyCell2.innerHTML = Math.round(old_sell); // "ขายเก่า";
-            bodyCell2.setAttribute("id", "old_sell-" + barcode);
-
+            n++;
           }
-          n++;
+
+          table3.appendChild(mytable3);
+
+
+          //update OTFB number
+          document.querySelector("#otfb").innerHTML = table_data.data0[1][2]; //.slice(4, table_data.data0[1][2]
+          document.querySelector("#fname").innerHTML = table_data.data0[1][37]; //.slice(4, table_data.data0[1][2]
+          document.getElementById("incoming-doc").style.display = 'none';
+
+
+
+          //console.table(table_data.data0);
+          //console.table(table_data.data1);
+          /**
+           *-----------------------------
+           **/
+
+          syncScroll();
+          addevent();
+          //addDate();
+
+          let re = /\d+\/\d+\/\d{4}/g;
+
+          document.getElementById("current-date").innerHTML = re.exec(table_data.data0[2][1]);
+
+
+
+        }
+        else {
+
+
+          //barcode at column-14
+          document.getElementById("outgoing-doc").style.display = 'none';
+
+          /***
+            *  prepare for table3
+          * **/
+          let table3 = document.getElementById("table3");
+          // Create a table element
+          var mytable3 = document.createElement("table");
+
+          // Create a table head element
+          var thead3 = document.createElement("thead");
+          var tbody3 = document.createElement("tbody");
+          // Append the head to the table
+          mytable3.appendChild(thead3);
+          // Append the body to the table
+          mytable3.appendChild(tbody3);
+
+          // Set the id attribute of the table
+          mytable3.setAttribute("id", "my-table3");
+          const dMargin = parseFloat(document.getElementById("margin").value);
+
+          var headRow = thead3.insertRow(0);
+          var cell1 = headRow.insertCell(0);
+          cell1.innerHTML = "ลำดับ";
+          headRow.insertCell(-1).innerHTML = "รหัส";
+          headRow.insertCell(-1).innerHTML = "รายการ";
+          headRow.insertCell(-1).innerHTML = "รวมเงิน";
+          headRow.insertCell(-1).innerHTML = "รับ";
+          headRow.insertCell(-1).innerHTML = "ทุนใหม่";
+          headRow.insertCell(-1).innerHTML = "ทุนเก่า";
+          headRow.insertCell(-1).innerHTML = "%";
+          headRow.insertCell(-1).innerHTML = "ขายใหม่";
+          headRow.insertCell(-1).innerHTML = "ขายเก่า";
+          var n = 0;
+          for (item in table_data.data0) {
+            if (n > 0) {
+              var bodyRow = tbody3.insertRow(-1);
+              var barcode = table_data.data0[item][14];
+
+              bodyRow.insertCell(-1).innerHTML = n;
+              bodyRow.insertCell(-1).innerHTML = barcode; // "รหัส";
+              var item_cell = bodyRow.insertCell(-1);
+              item_cell.innerHTML = table_data.data0[item][15]; // "รายการ";
+              item_cell.setAttribute("class", "item-cell");
+
+              bodyRow.insertCell(-1).innerHTML = parseFloat(
+                table_data.data0[item][21]
+              ).toFixed(2); // "รวมเงิน";
+              bodyRow.insertCell(-1).innerHTML = parseFloat(
+                table_data.data0[item][18]
+              ).toFixed(0); // "รับ";
+
+              let id_old_base = document.getElementById(barcode);
+              let id_old_sell = document.getElementById('sell-' + barcode);
+
+              if (id_old_base) {
+                var old_base = parseFloat(id_old_base.innerHTML).toFixed(2);
+              } else {
+                var old_base = -999;
+              }
+              if (id_old_sell) {
+                var old_sell = parseFloat(id_old_sell.innerHTML).toFixed(2);
+              } else {
+                var old_sell = -999;
+              }
+
+              var new_base = parseFloat(table_data.data0[item][20]).toFixed(2);
+
+              var new_sell = (new_base * (1 + dMargin * 0.01)).toFixed(2);
+              //var old_sell = (old_base * (1 + dMargin * 0.01)).toFixed(2);
+
+
+              var bodyCell1 = bodyRow.insertCell(-1);
+              bodyCell1.innerHTML = new_base; // "ทุนใหม่";
+              bodyCell1.setAttribute("id", "new_base-" + barcode);
+
+              bodyCell1 = bodyRow.insertCell(-1)
+              bodyCell1.innerHTML = old_base; // "ทุนเก่า";
+              bodyCell1.setAttribute("id", "old_base-" + barcode);
+
+              var celledit = bodyRow.insertCell(-1);
+
+
+              var input = document.createElement('input');
+              input.setAttribute("class", "margin_td");
+              input.setAttribute("onkeypress", "return isNumberKey(event)");
+              //type = "number" onkeypress = "return isNumberKey(event)" 
+
+              input.type = "number";
+              input.value = dMargin;
+              input.setAttribute("id", "mg-" + barcode);
+              celledit.appendChild(input);
+
+
+              var bodyCell2 = bodyRow.insertCell(-1);
+              bodyCell2.innerHTML = Math.round(new_sell); // "ขายใหม่";
+              bodyCell2.setAttribute("id", "new_sell-" + barcode);
+
+
+              bodyCell2 = bodyRow.insertCell(-1);
+              bodyCell2.innerHTML = Math.round(old_sell); // "ขายเก่า";
+              bodyCell2.setAttribute("id", "old_sell-" + barcode);
+
+            }
+            n++;
+          }
+
+          table3.appendChild(mytable3);
+
+
+          /**
+           *-----------------------------
+           **/
+
+          syncScroll();
+          addevent();
+
+          let re = /\d+\/\d+\/\d{4}/g;
+
+          document.getElementById("current-date").innerHTML = re.exec(table_data.data0[2][1]);
+          document.getElementById("bill-no").innerHTML = table_data.data0[2][2];
+
         }
 
-        table3.appendChild(mytable3);
-
-
-        /**
-         *-----------------------------
-         **/
-
-        syncScroll();
-        addevent();
-
-        let re = /\d+\/\d+\/\d{4}/g;
-
-        document.getElementById("current-date").innerHTML = re.exec(table_data.data0[2][1]);
-        document.getElementById("otfb").innerHTML = table_data.data0[2][2];
       }
 
       function syncScroll() {
