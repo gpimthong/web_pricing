@@ -46,11 +46,11 @@
 
 
     td {
-      width: auto;
+      width: fit-content;
       overflow: hidden;
       white-space: nowrap;
       margin: auto;
-      padding: 5px 0 5px 0;
+      padding: 5px 10px 5px 10px;
 
     }
 
@@ -76,7 +76,7 @@
       /* height: 100vh; */
       align-items: center;
       width: 100%;
-      margin: 20px auto 20px;
+      margin: 20px 15px 15px 20px;
     }
 
     #my-table3 {
@@ -85,6 +85,8 @@
 
     .item-cell {
       text-align: left;
+      width: 10rem;
+
     }
 
     .margin_td {
@@ -102,7 +104,7 @@
     input.margin_td,
     input#margin {
       text-align: center;
-      width: 4rem;
+      width: 3rem;
     }
 
     #topic {
@@ -441,12 +443,12 @@
             let id_old_sell = document.getElementById('sell-' + barcode);
 
             if (id_old_base) {
-              var old_base = parseFloat(id_old_base.innerHTML);
+              var old_base = parseFloat(id_old_base.innerHTML).toFixed(2);
             } else {
               var old_base = -999;
             }
             if (id_old_sell) {
-              var old_sell = parseFloat(id_old_sell.innerHTML);
+              var old_sell = parseFloat(id_old_sell.innerHTML).toFixed(2);
             } else {
               var old_sell = -999;
             }
