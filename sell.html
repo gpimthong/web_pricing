@@ -40,11 +40,18 @@
             margin: auto;
             padding: 20px;
             /* border: 1px solid black; */
+            max-width: 2480px;
+            width: 100%;
         }
 
+
         td {
-            /* border: 1px solid rgb(0, 0, 0); */
+            width: auto;
+            overflow: hidden;
             white-space: nowrap;
+            margin: auto;
+            padding: 5px 0 5px 0;
+
         }
 
         .grid-container {
@@ -92,6 +99,11 @@
             width: 5rem;
         }
 
+        #otfb,
+        #fname {
+            padding: 5px 50px;
+        }
+
         @media print {
 
             .no-print,
@@ -108,8 +120,8 @@
 
 
     <hr class="no-print">
-    <p>วันที่ : <span id="current-date"></span></p>
-    <p>Mจ<span id="otfb"></span></p>
+    <p>วันที่ : <span id="current-date"></span><span id="fname"></span><span id="otfb"></span></p>
+
     <div class="grid-container" id="-container">
         <!-- <div class="label">สินค้าที่รับ</div>
                 <div class="label">สินค้าทั้งหมด</div> -->
@@ -387,7 +399,7 @@
                         bodyCell1.setAttribute("id", "current_base-" + barcode);
 
                         bodyCell1 = bodyRow.insertCell(-1)
-                        bodyCell1.innerHTML = old_sell; // "ราคาขาย";
+                        bodyCell1.innerHTML = old_sell.toFixed(2); // "ราคาขาย";
                         bodyCell1.setAttribute("id", "current_sell-" + barcode);
 
                     }
@@ -398,8 +410,11 @@
 
 
                 //update OTFB number
-                document.querySelector("#otfb").innerHTML = table_data.data0[1][2].slice(4, table_data.data0[1][2]
-                    .length);
+                document.querySelector("#otfb").innerHTML = table_data.data0[1][2]; //.slice(4, table_data.data0[1][2]
+
+
+                document.querySelector("#fname").innerHTML = table_data.data0[1][37]; //.slice(4, table_data.data0[1][2]
+
 
 
                 //console.table(table_data.data0);
@@ -410,7 +425,12 @@
 
                 syncScroll();
                 addevent();
-                addDate();
+                //addDate();
+
+                let re = /\d+\/\d+\/\d{4}/g;
+
+                document.getElementById("current-date").innerHTML = re.exec(table_data.data0[2][1]);
+
             }
 
             function syncScroll() {
@@ -506,7 +526,7 @@
                     //obj.innerHTML = Math.round(old_base * (1+(element.value*0.01)));
 
                     obj = document.getElementById('new_sell-' + element.id.slice(3, element.id.length));
-                    obj.innerHTML = Math.round(new_base * (1 + (element.value * 0.01)));
+                    obj.innerHTML = Math.round(new_base * (1 + (element.value * 0.01))) + '.00';
 
 
                 });

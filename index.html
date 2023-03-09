@@ -40,11 +40,18 @@
       margin: auto;
       padding: 20px;
       /* border: 1px solid black; */
+      max-width: 2480px;
+      width: 100%;
     }
 
+
     td {
-      /* border: 1px solid rgb(0, 0, 0); */
+      width: auto;
+      overflow: hidden;
       white-space: nowrap;
+      margin: auto;
+      padding: 5px 0 5px 0;
+
     }
 
     .grid-container {
@@ -98,6 +105,15 @@
       width: 4rem;
     }
 
+    #topic {
+      font-size: 2rem;
+      margin: 0px 25px;
+    }
+
+    span {
+      margin: 0px 25px;
+    }
+
     @media print {
 
       .no-print,
@@ -117,13 +133,14 @@
 
 
 
-  <p>วันที่ : <span id="current-date"></span></p>
+  <p><span id="topic">ทำราคาขาย</span>เลขบิล :<span id="otfb"></span> วันที่ : <span id="current-date"></span><span
+      id="fname"></span></p>
 
   <div class="grid-container" id="-container">
     <div class="no-print" id="table1" name="data1"></div>
     <div class="no-print" id="table2" name="data2"></div>
     <div id="table3" name="data3">
-      <p>ราคาขาย</p>
+
     </div>
   </div>
   <!-- END HTML code -->
@@ -466,11 +483,6 @@
             bodyCell2.innerHTML = Math.round(new_sell); // "ขายใหม่";
             bodyCell2.setAttribute("id", "new_sell-" + barcode);
 
-            if (new_base > old_base) {
-              bodyCell2.setAttribute("class", "price-up");
-            } else if (new_base < old_base) {
-              bodyCell2.setAttribute("class", "price-down");
-            }
 
             bodyCell2 = bodyRow.insertCell(-1);
             bodyCell2.innerHTML = Math.round(old_sell); // "ขายเก่า";
@@ -489,7 +501,11 @@
 
         syncScroll();
         addevent();
-        addDate();
+
+        let re = /\d+\/\d+\/\d{4}/g;
+
+        document.getElementById("current-date").innerHTML = re.exec(table_data.data0[2][1]);
+        document.getElementById("otfb").innerHTML = table_data.data0[2][2];
       }
 
       function syncScroll() {
