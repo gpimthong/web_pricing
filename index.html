@@ -138,7 +138,7 @@
   <p id="incoming-doc"><span id="topic">ทำราคาขาย</span>เลขบิล :<span id="bill-no"></span> วันที่ : <span
       id="current-date"></span></p>
 
-  <p id="outgoing-doc">วันที่ : <span id="current-date"></span><span id="fname"></span><span id="otfb"></span></p>
+  <p id="outgoing-doc">วันที่ : <span id="current-date2"></span><span id="fname"></span><span id="otfb"></span></p>
 
   <div class="grid-container" id="-container">
     <div class="no-print" id="table1" name="data1"></div>
@@ -164,6 +164,9 @@
     const file_2_header = [1, 2, 4, 5]; //[Array.from(Array(50).keys()); //1, 2, 3, 4, 5];
     const file_sell_header = [1, 2, 15, 17, 20, 35]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
 
+
+    document.getElementById("incoming-doc").style.display = 'none';
+    document.getElementById("outgoing-doc").style.display = 'none';
 
     function isNumberKey(evt) {
       var charCode = (evt.which) ? evt.which : evt.keyCode
@@ -416,6 +419,9 @@
 
         if (bill_doc) {
 
+
+          document.getElementById("outgoing-doc").style.display = 'block';
+
           let table3 = document.getElementById("table3");
           // Create a table element
           var mytable3 = document.createElement("table");
@@ -517,8 +523,7 @@
 
           let re = /\d+\/\d+\/\d{4}/g;
 
-          document.getElementById("current-date").innerHTML = re.exec(table_data.data0[2][1]);
-
+          document.getElementById("current-date2").innerHTML = re.exec(table_data.data0[2][1]);
 
 
         }
@@ -527,6 +532,7 @@
 
           //barcode at column-14
           document.getElementById("outgoing-doc").style.display = 'none';
+          document.getElementById("incoming-doc").style.display = 'block';
 
           /***
             *  prepare for table3
