@@ -5,36 +5,8 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ใบรับ</title>
+  <title>Pricing</title>
   <style>
-    #container {
-      display: flex;
-      width: 100%;
-      height: 500px;
-    }
-
-    .price-up {
-      color: red;
-    }
-
-    .price-down {
-      color: green;
-    }
-
-    .price-down,
-    .price-up {
-      font-weight: bold;
-      /* border: 4px solid rgb(12, 125, 177); */
-    }
-
-    #table1,
-    #table2 {
-      overflow: auto;
-      display: none;
-    }
-
-    #my-table1,
-    #my-table2,
     #my-table3 {
       border-collapse: collapse;
       margin: auto;
@@ -43,7 +15,6 @@
       max-width: 2480px;
       width: 100%;
     }
-
 
     td {
       width: fit-content;
@@ -127,6 +98,8 @@
 </head>
 
 <body>
+
+
   <!-- START HTML code -->
   <input class="no-print" type="file" id="inputfiles" multiple onchange="readFiles(event)" />
   <label class="no-print" for="margin">Margin</label>
@@ -135,39 +108,48 @@
 
 
 
+
+  <!-- This is header for ใบรับ -->
   <p id="incoming-doc"><span id="topic">ทำราคาขาย</span>เลขบิล :<span id="bill-no"></span> วันที่ : <span
       id="current-date"></span></p>
 
+
+  <!-- This is header for ใบจ่าย -->
   <p id="outgoing-doc">วันที่ : <span id="current-date2"></span><span id="fname"></span><span id="otfb"></span></p>
 
-  <div class="grid-container" id="-container">
-    <div class="no-print" id="table1" name="data1"></div>
-    <div class="no-print" id="table2" name="data2"></div>
-    <div id="table3" name="data3">
 
-    </div>
+
+  <!-- This are all 3 tables (2 first hidden)-->
+  <div class="grid-container">
+    <div class="no-print" id="table1" name="data1" hidden></div>
+    <div class="no-print" id="table2" name="data2" hidden></div>
+    <div id="table3" name="data3"></div>
   </div>
+
   <!-- END HTML code -->
-  <!--
 
 
 
 
 
-  -->
+
+
   <!-- START JavaScript code -->
   <script>
 
     var bill_doc = false;
 
+    //select column to fill out the table1 and table2 (which is not used anymore)
     const file_1_header = [1, 14, 15, 18, 20, 21]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
     const file_2_header = [1, 2, 4, 5]; //[Array.from(Array(50).keys()); //1, 2, 3, 4, 5];
-    const file_sell_header = [1, 2, 15, 17, 20, 35]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
 
 
+    //Hide both header for now
     document.getElementById("incoming-doc").style.display = 'none';
     document.getElementById("outgoing-doc").style.display = 'none';
 
+
+    //this function only allow numberic key to be entered to Margin input box (for % กำไร)
     function isNumberKey(evt) {
       var charCode = (evt.which) ? evt.which : evt.keyCode
       if (charCode > 31 && (charCode != 46 && (charCode < 48 || charCode > 57)))
@@ -175,18 +157,22 @@
       return true;
     }
 
-    addDate();
 
-    let table_data = {};
-    table_data.data0 = {};
-    table_data.data1 = {};
 
-    var linesRead = 0;
+    //Variable to store all contents from the input files (2 files only)
+    var table_data = [];
+    table_data.data0 = [];
+    table_data.data1 = [];
 
-    let items = [];
+
+    //to store barcode of input file
+    var items_barcode = [];
+    var price_list = {};
 
 
     function readFiles(event) {
+
+
       // get the list of files objects
       let files = event.target.files;
 
@@ -196,10 +182,10 @@
         return;
       }
 
+
+      //Get both file size
       let file1_size = files[0].size;
       let file2_size = files[1].size;
-
-      let file_array = [];
 
       // create an array to store all texts
       let texts = [];
@@ -211,15 +197,13 @@
       // create an array to store all readers
       let readers = [];
 
-
       // loop through each file object and create a reader for each one
       for (let i = 0; i < files.length; i++) {
         readers[i] = new FileReader();
       }
 
 
-
-
+      //For future use
       //var tsv is the TSV file with headers
       function tsvJSON(tsv) {
 
@@ -246,12 +230,15 @@
 
       }
 
+
+
+      //----------------------------------------------
+      //Start reading files contents
+      //----------------------------------------------
       readers[0].onload = function (e) {
         item_list = e.target.result;
-
         checkAllLoaded();
       };
-
       readers[1].onload = function (e) {
         all_list = e.target.result;
         checkAllLoaded();
@@ -265,155 +252,66 @@
         readers[0].readAsText(files[1]);
         readers[1].readAsText(files[0]);
       }
+      //----------------------------------------------
 
 
 
-      // define a function to check if all files are loaded and then display them in separate tables
+      //a function to check if all files are loaded and then display them in separate tables
       function checkAllLoaded() {
         if (item_list.length != 0 && all_list.length != 0) {
-          texts.push(item_list);
-          texts.push(all_list);
+          //texts.push(item_list);
+          //texts.push(all_list);
           displayTables();
         }
       }
+      //----------------------------------------------
 
 
 
-
-
-
-      // define a function to display each text in a separate table
+      // a function to display each text in a separate table
       function displayTables() {
 
+
+
+
+        //Collect all barcode from item_list and re-construct all_goods in new array
+        let items = item_list.split('\n');
+
         //check what kind of file here
-        var bill_no = texts[0].split('\n')[2].split('\t')[2];
+        var bill_no = items[2].split('\t')[2]; //row 2 , column 2 for the file type
         let reg = /otfb/i;
         if (reg.exec(bill_no))
           bill_doc = true;
 
 
-        // loop through each text
-        for (let i = 0; i < texts.length; i++) {
-          // get the corresponding table element by its id
-          let table = document.getElementById("table" + (i + 1));
+        for (let i = 0; i < items.length; i++) {
 
-          // Create a table element
-          var mytable = document.createElement("table");
+          // split the line by tabs
+          let cells = items[i].split('\t');
+          table_data.data0[i] = cells;
 
-          // Create a table head element
-          var thead = document.createElement("thead");
-          var tbody = document.createElement("tbody");
+          if (bill_doc)
+            items_barcode.push(cells[15]);//barcode at column-15
+          else
+            items_barcode.push(cells[14]); //barcode at column-14
 
-          // Append the head to the table
-          mytable.appendChild(thead);
-          // Append the body to the table
-          mytable.appendChild(tbody);
-
-          // Set the id attribute of the table
-          mytable.setAttribute("id", "my-table" + (i + 1));
-
-          // split the text by line breaks
-          let lines = texts[i].split("\n");
+        }
 
 
+        //all_list
+        let goods = all_list.split('\n');
+        let goods_i = 0;
+        for (let i = 1; i < goods.length; i++) {
 
+          // split the line by tabs
+          let cells = goods[i].split('\t');
 
-
-
-          // loop through each line
-          let n = 0;
-
-          for (let j = 0; j < lines.length; j++) {
-            //linesRead++;
-            //progress.value = linesRead / lines.length;
-
-            // split the line by tabs
-            let cells = lines[j].split("\t");
-
-            if (cells.length > 1) {
-              //Keeping barcode of a new items
-              if (i == 0 && j > 0) {
-                //store item of today
-                if (bill_doc)
-                  items.push(cells[15]);//barcode at column-15
-                else
-                  items.push(cells[14]); //barcode at column-14
-              }
-              //-----------------------
-
-              if (
-                i == 0 ||
-                (i == 1 && j == 0) ||
-                (i == 1 && items.includes(cells[1]))
-              ) {
-                //Create ID Column on the left most
-                // Add some content to the head cells
-                //cell1.innerHTML = j;
-
-                //This is just for JSON object
-                if (i == 0) {
-                  table_data.data0[j] = cells;
-                }
-
-                if (i == 1) {
-                  //cell1.innerHTML = n + "-" + j;
-                  table_data.data1[n] = cells;
-                  n++;
-                }
-                //-------------------------
-
-                // loop through each cell
-                c = 0;
-
-                if (j == 0) {
-                  var headRow = thead.insertRow(0);
-                  headRow.insertCell(0);
-                } else {
-                  var bodyRow = tbody.insertRow(-1);
-                  var bodyCell0 = bodyRow.insertCell(0);
-                  bodyCell0.innerHTML = j;
-                  if (i == 1) bodyCell0.innerHTML = String(n - 1) + "-" + j;
-                }
-
-                for (let k = 0; k < cells.length; k++) {
-                  //this is header
-                  if (j == 0) {
-                    if (
-                      (file_1_header.includes(k) && i == 0) ||
-                      (file_2_header.includes(k) && i == 1)
-                    ) {
-
-                      // Create two rows for the body
-                      var cell1 = headRow.insertCell(-1);
-                      cell1.innerHTML = String(k) + "_" + cells[k];
-                    }
-                  } else {
-                    if (
-                      (file_1_header.includes(k) && i == 0) ||
-                      (file_2_header.includes(k) && i == 1)
-                    ) {
-                      var bodyCell1 = bodyRow.insertCell(-1);
-
-                      bodyCell1.innerHTML = cells[k];
-                      //add id to old price
-                      if (i == 1 && k == 5) {
-                        bodyCell1.setAttribute("id", cells[1]);
-
-                      }
-                      //add id to old sell
-                      if (i == 1 && k == 4) {
-                        bodyCell1.setAttribute("id", 'sell-' + cells[1]);
-
-                      }
-                    }
-                  }
-                }
-              }
-            }
-
+          if (items_barcode.includes(cells[1])) {
+            table_data.data1[goods_i] = cells;
+            price_list[cells[1]] = [parseFloat(cells[4]).toFixed(2), parseFloat(cells[5]).toFixed(2)];
+            goods_i++;
           }
-          // Append the table to the document body
-          table.appendChild(mytable);
+
         }
 
 
@@ -449,82 +347,61 @@
           headRow.insertCell(-1).innerHTML = "ราคาทุน";
           headRow.insertCell(-1).innerHTML = "ราคาขาย";
 
-          var n = 0;
-          for (item in table_data.data0) {
-            if (n > 0) {
+
+          for (let i = 1; i < table_data.data0.length; i++) {
+
+
+            var barcode = table_data.data0[i][15];
+
+            if (barcode) {
+
               var bodyRow = tbody3.insertRow(-1);
-              var barcode = table_data.data0[item][15];
 
-
-              bodyRow.insertCell(-1).innerHTML = n;
+              bodyRow.insertCell(-1).innerHTML = i;
               bodyRow.insertCell(-1).innerHTML = barcode; // "บาร์โค้ด";
 
-
               var item_cell = bodyRow.insertCell(-1);
-              item_cell.innerHTML = table_data.data0[item][17]; // "รายการ";
-              item_cell.setAttribute("class", "item-cell");
+              item_cell.innerHTML = table_data.data0[i][17]; // "รายการ";
+              item_cell.classList.add("item-cell");
 
+              bodyRow.insertCell(-1).innerHTML = parseInt(table_data.data0[i][20]); // "จำนวน";
 
+              bodyRow.insertCell(-1).innerHTML = table_data.data0[i][35]; // "หน่วยขาย";
 
-              bodyRow.insertCell(-1).innerHTML = parseFloat(
-                table_data.data0[item][20]
-              ).toFixed(0); // "จำนวน";
+              let old_base = -999;
+              let old_sell = -999;
 
-
-              bodyRow.insertCell(-1).innerHTML = table_data.data0[item][35]; // "หน่วยขาย";
-
-
-              let id_old_base = document.getElementById(barcode);
-              let id_old_sell = document.getElementById('sell-' + barcode);
-
-              if (id_old_base) {
-                var old_base = parseFloat(id_old_base.innerHTML).toFixed(2);
-              } else {
-                var old_base = -999;
+              try {
+                old_base = parseFloat(price_list[barcode][1]);
+                old_sell = parseFloat(price_list[barcode][0]);
               }
-              if (id_old_sell) {
-                var old_sell = parseFloat(id_old_sell.innerHTML);
-              } else {
-                var old_sell = -999;
+              catch {
+                old_base = -9999;
+                old_sell = -9999;
               }
-
 
               var bodyCell1 = bodyRow.insertCell(-1);
-              bodyCell1.innerHTML = old_base; // "ราคาทุน";
+              bodyCell1.innerHTML = old_base.toFixed(2); // "ราคาทุน";
               bodyCell1.setAttribute("id", "current_base-" + barcode);
 
               bodyCell1 = bodyRow.insertCell(-1)
-              bodyCell1.innerHTML = old_sell.toFixed(2); // "ราคาขาย";
+              bodyCell1.innerHTML = Math.round(old_sell).toFixed(2); // "ราคาขาย";
               bodyCell1.setAttribute("id", "current_sell-" + barcode);
 
             }
-            n++;
+
           }
 
           table3.appendChild(mytable3);
 
 
           //update OTFB number
-          document.querySelector("#otfb").innerHTML = table_data.data0[1][2]; //.slice(4, table_data.data0[1][2]
-          document.querySelector("#fname").innerHTML = table_data.data0[1][37]; //.slice(4, table_data.data0[1][2]
+          document.querySelector("#otfb").innerHTML = table_data.data0[1][2];
+          document.querySelector("#fname").innerHTML = table_data.data0[1][37];
           document.getElementById("incoming-doc").style.display = 'none';
 
-
-
-          //console.table(table_data.data0);
-          //console.table(table_data.data1);
-          /**
-           *-----------------------------
-           **/
-
-          syncScroll();
-          addevent();
-          //addDate();
-
           let re = /\d+\/\d+\/\d{4}/g;
-
           document.getElementById("current-date2").innerHTML = re.exec(table_data.data0[2][1]);
-
 
         }
         else {
@@ -565,44 +442,39 @@
           headRow.insertCell(-1).innerHTML = "%";
           headRow.insertCell(-1).innerHTML = "ขายใหม่";
           headRow.insertCell(-1).innerHTML = "ขายเก่า";
-          var n = 0;
-          for (item in table_data.data0) {
-            if (n > 0) {
-              var bodyRow = tbody3.insertRow(-1);
-              var barcode = table_data.data0[item][14];
 
-              bodyRow.insertCell(-1).innerHTML = n;
+          for (let i = 1; i < table_data.data0.length; i++) {
+
+
+            var barcode = table_data.data0[i][14];
+
+            if (barcode) {
+
+              var bodyRow = tbody3.insertRow(-1);
+
+              bodyRow.insertCell(-1).innerHTML = i;
               bodyRow.insertCell(-1).innerHTML = barcode; // "รหัส";
               var item_cell = bodyRow.insertCell(-1);
-              item_cell.innerHTML = table_data.data0[item][15]; // "รายการ";
-              item_cell.setAttribute("class", "item-cell");
+              item_cell.innerHTML = table_data.data0[i][15]; // "รายการ";
+              item_cell.classList.add("item-cell");
 
-              bodyRow.insertCell(-1).innerHTML = parseFloat(
-                table_data.data0[item][21]
-              ).toFixed(2); // "รวมเงิน";
-              bodyRow.insertCell(-1).innerHTML = parseFloat(
-                table_data.data0[item][18]
-              ).toFixed(0); // "รับ";
+              bodyRow.insertCell(-1).innerHTML = parseFloat(table_data.data0[i][21]).toFixed(2); // "รวมเงิน";
+              bodyRow.insertCell(-1).innerHTML = parseInt(table_data.data0[i][18]); // "รับ";
 
-              let id_old_base = document.getElementById(barcode);
-              let id_old_sell = document.getElementById('sell-' + barcode);
+              let old_base = -999;
+              let old_sell = -999;
 
-              if (id_old_base) {
-                var old_base = parseFloat(id_old_base.innerHTML).toFixed(2);
-              } else {
-                var old_base = -999;
+              try {
+                old_base = price_list[barcode][1];
+                old_sell = price_list[barcode][0];
               }
-              if (id_old_sell) {
-                var old_sell = parseFloat(id_old_sell.innerHTML).toFixed(2);
-              } else {
-                var old_sell = -999;
+              catch {
+                old_base = -9999;
+                old_sell = -9999;
               }
 
-              var new_base = parseFloat(table_data.data0[item][20]).toFixed(2);
-
+              var new_base = parseFloat(table_data.data0[i][20]).toFixed(2);
               var new_sell = (new_base * (1 + dMargin * 0.01)).toFixed(2);
-              //var old_sell = (old_base * (1 + dMargin * 0.01)).toFixed(2);
-
 
               var bodyCell1 = bodyRow.insertCell(-1);
               bodyCell1.innerHTML = new_base; // "ทุนใหม่";
@@ -616,9 +488,8 @@
 
 
               var input = document.createElement('input');
-              input.setAttribute("class", "margin_td");
+              input.classList.add("margin_td");
               input.setAttribute("onkeypress", "return isNumberKey(event)");
-              //type = "number" onkeypress = "return isNumberKey(event)" 
 
               input.type = "number";
               input.value = dMargin;
@@ -636,17 +507,11 @@
               bodyCell2.setAttribute("id", "old_sell-" + barcode);
 
             }
-            n++;
           }
 
           table3.appendChild(mytable3);
 
 
-          /**
-           *-----------------------------
-           **/
-
-          syncScroll();
           addevent();
 
           let re = /\d+\/\d+\/\d{4}/g;
@@ -658,24 +523,6 @@
 
       }
 
-      function syncScroll() {
-        var table1 = document.getElementById("table1");
-        var table2 = document.getElementById("table2");
-
-        var scrollHandler = function (e) {
-          var source = e.target;
-          var target = source == table1 ? table2 : table1;
-          target.scrollTop = source.scrollTop;
-        };
-
-        table1.addEventListener("scroll", scrollHandler);
-        table2.addEventListener("scroll", scrollHandler);
-      }
-
-
-
-
-
     }
 
     function addevent() {
@@ -685,34 +532,16 @@
 
       mtd.forEach(function (element) {
         element.addEventListener("change", function () {
-          //console.log(element.id);
-          var obj = document.getElementById('old_base-' + element.id.slice(3, element.id.length));
-          var old_base = parseFloat(obj.innerHTML)
 
           obj = document.getElementById('new_base-' + element.id.slice(3, element.id.length));
           var new_base = parseFloat(obj.innerHTML);
 
-          //old.innerHTML = 1+(element.value * 0.01)
-          //console.log(old_base + " - " + new_base);
-
-          //obj = document.getElementById('old_sell-'+element.id.slice(3,element.id.length));
-          //obj.innerHTML = Math.round(old_base * (1+(element.value*0.01)));
-
           obj = document.getElementById('new_sell-' + element.id.slice(3, element.id.length));
           obj.innerHTML = Math.round(new_base * (1 + (element.value * 0.01)));
-
 
         });
       })
 
-    }
-
-    function addDate() {
-      n = new Date();
-      y = 543 + n.getFullYear();
-      m = n.getMonth() + 1;
-      d = n.getDate();
-      document.getElementById("current-date").innerHTML = d + "/" + m + "/" + y;
     }
 
 
