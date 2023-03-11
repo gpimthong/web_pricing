@@ -87,6 +87,16 @@
             margin: 0px 25px;
         }
 
+        #drop_zone {
+            border: 1px dotted rgb(71, 71, 224);
+            width: 100%;
+            height: 100vh;
+            background: rgba(202, 207, 208, 0.175);
+            text-align: center;
+            font-size: 3rem;
+        }
+
+
         @media print {
 
             .no-print,
@@ -101,14 +111,18 @@
 
 
     <!-- START HTML code -->
-    <input class="no-print" type="file" id="inputfiles" multiple onchange="readFiles(event)" />
-    <label class="no-print" for="margin">Margin</label>
-    <input class="no-print" id="margin" value="10" type="number" onkeypress="return isNumberKey(event)" />
-    <input class="no=print" id="exportcsv" type="button" value="Export" />
-    <hr class="no-print">
+    <div id="tool-header">
+        <input class="no-print" type="file" id="inputfiles" accept=".txt" multiple onchange="readFiles(event)" />
+        <label class="no-print" for="margin">Margin</label>
+        <input class="no-print" id="margin" value="10" type="number" onkeypress="return isNumberKey(event)" />
 
+        <hr class="no-print">
 
-
+        <div class="no-print" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+            <p>ลากไฟล์มาวางตรงนี้</p>
+        </div>
+        <hr class="no-print">
+    </div>
 
     <!-- This is header for ใบรับ -->
     <p id="incoming-doc"><span id="topic">ทำราคาขาย</span>เลขบิล :<span id="bill-no"></span> วันที่ : <span
@@ -117,7 +131,7 @@
 
     <!-- This is header for ใบจ่าย -->
     <p id="outgoing-doc">วันที่ : <span id="current-date2"></span><span id="fname"></span><span id="otfb"></span></p>
-
+    <input class="no-print" id="exportcsv" type="button" value="Export" />
 
 
     <!-- This are all 3 tables (2 first hidden)-->
@@ -140,6 +154,7 @@
 
         var bill_doc = false;
         var CSVExportData = [];
+        var CSVHeder = [];
 
         //select column to fill out the table1 and table2 (which is not used anymore)
         const file_1_header = [1, 14, 15, 18, 20, 21]; // Array.from(Array(50).keys()); //[1, 2, 3, 4];
@@ -172,12 +187,19 @@
         var items_barcode = [];
         var price_list = {};
 
+        var xFILE = [];
+
 
         function readFiles(event) {
 
-
             // get the list of files objects
             let files = event.target.files;
+
+            ProcessFiles(files);
+
+        }
+
+        function ProcessFiles(files) {
 
             // check if there are exactly two files selected
             if (files.length != 2) {
@@ -273,6 +295,8 @@
 
             // a function to display each text in a separate table
             function displayTables() {
+
+                document.getElementById("tool-header").style.display = "none";
 
 
 
@@ -422,7 +446,11 @@
                     document.getElementById("incoming-doc").style.display = 'none';
 
                     let re = /\d+\/\d+\/\d{4}/g;
-                    document.getElementById("current-date2").innerHTML = re.exec(table_data.data0[2][1]);
+                    dDate = re.exec(table_data.data0[2][1]);
+                    document.getElementById("current-date2").innerHTML = dDate;
+
+                    CSVHeder.push(['วันที่ : ' + dDate, table_data.data0[1][37], table_data.data0[1][2]]);
+
 
                 }
                 else {
@@ -575,7 +603,9 @@
 
             let csvContent = "data:text/csv;charset=utf-8,";
 
-            CSVExportData.forEach(function (rowArray) {
+            let data = CSVHeder.concat(CSVExportData);
+
+            data.forEach(function (rowArray) {
                 let row = rowArray.join(",");
                 csvContent += row + "\r\n";
             });
@@ -584,6 +614,42 @@
             var encodedUri = encodeURI(csvContent);
             window.open(encodedUri);
         }
+
+
+        function dropHandler(ev) {
+            //console.log("File(s) dropped");
+
+            // Prevent default behavior (Prevent file from being opened)
+            ev.preventDefault();
+
+            xFILE = ev.dataTransfer.files;
+
+            if (xFILE.length != 2) {
+                alert('2 files เท่านั้น')
+            }
+            else {
+
+                let isText = false;
+
+                if (xFILE[0].name.slice(-4, xFILE[0].name.length) == '.txt' && xFILE[1].name.slice(-4, xFILE[1].name.length) == '.txt') {
+                    ProcessFiles(xFILE);
+                }
+                else {
+                    alert('.txt file เท่านั้น')
+                }
+
+            }
+
+
+        }
+
+        function dragOverHandler(ev) {
+            //console.log("File(s) in drop zone");
+
+            // Prevent default behavior (Prevent file from being opened)
+            ev.preventDefault();
+        }
+
 
 
     </script>
