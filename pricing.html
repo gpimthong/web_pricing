@@ -103,11 +103,11 @@
             cursor: pointer;
             border-radius: 5px;
             background-color: rgb(25, 77, 74);
-
             color: aliceblue;
         }
 
-        input[type="file"] {
+        input[type="file"],
+        input[type="button"] {
             display: none;
         }
 
@@ -170,8 +170,13 @@
 
 
     <!-- This is header for ใบจ่าย -->
-    <p id="outgoing-doc">วันที่ : <span id="current-date2"></span><span id="fname"></span><span id="otfb"></span></p>
-    <input class="no-print" id="exportcsv" type="button" value="Export" />
+    <p id="outgoing-doc">วันที่ : <span id="current-date2"></span><span id="fname"></span><span
+            id="otfb"></span><span><label id="exportcsv" class="custom-file-upload no-print">
+                <input class="no-print" type="button" />
+                Export
+            </label></span></p>
+
+
 
 
     <!-- This are all 3 tables (2 first hidden)-->
@@ -386,7 +391,7 @@
 
 
                     document.getElementById("outgoing-doc").style.display = 'block';
-                    document.getElementById("exportcsv").style.display = 'inline-block';
+                    document.getElementById("exportcsv").style.display = 'inline';
                     document.getElementById("exportcsv").addEventListener('click', exportCSV);
 
                     let table3 = document.getElementById("table3");
