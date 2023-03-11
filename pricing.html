@@ -88,14 +88,39 @@
         }
 
         #drop_zone {
-            border: 1px dotted rgb(71, 71, 224);
-            width: 100%;
-            height: 100vh;
-            background: rgba(202, 207, 208, 0.175);
+            border: 5px dashed rgb(114, 114, 126);
+            width: 98%;
+            height: 90vh;
+            background: rgb(233, 236, 236);
             text-align: center;
-            font-size: 3rem;
+            margin: auto;
         }
 
+        .custom-file-upload {
+            border: 2px solid #2a8db4;
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: rgb(25, 77, 74);
+
+            color: aliceblue;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        #in-drop-area {
+            margin: auto;
+
+            margin-top: 30vh;
+        }
+
+        #inputmargin {
+            margin-left: 10px;
+            margin-top: 10px;
+        }
 
         @media print {
 
@@ -111,15 +136,30 @@
 
 
     <!-- START HTML code -->
+
+
+
+
     <div id="tool-header">
-        <input class="no-print" type="file" id="inputfiles" accept=".txt" multiple onchange="readFiles(event)" />
-        <label class="no-print" for="margin">Margin</label>
-        <input class="no-print" id="margin" value="10" type="number" onkeypress="return isNumberKey(event)" />
+
+        <!-- <input class="no-print" type="file" id="inputfiles" accept=".txt" multiple onchange="readFiles(event)" /> -->
+        <div id="inputmargin">
+            <label class="no-print" for="margin">เลือก %</label>
+            <input class="no-print" id="margin" value="10" type="number" onkeypress="return isNumberKey(event)" />
+        </div>
+
 
         <hr class="no-print">
 
         <div class="no-print" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-            <p>ลากไฟล์มาวางตรงนี้</p>
+            <div id="in-drop-area">
+                <p>ลากไฟล์มาวางภายในกรอบนี้</p>
+                <p>หรือ</p>
+                <label class="custom-file-upload">
+                    <input type="file" accept=".txt" multiple onchange="readFiles(event)" />
+                    เลือกไฟล์
+                </label>
+            </div>
         </div>
         <hr class="no-print">
     </div>
