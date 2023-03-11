@@ -607,7 +607,8 @@
 
             data.forEach(function (rowArray) {
                 let row = rowArray.join(",");
-                csvContent += row + "\r\n";
+                //need \uFEFF to open correctly with Excel
+                csvContent += '\uFEFF' + row + "\r\n";//https://stackoverflow.com/questions/6002256/is-it-possible-to-force-excel-recognize-utf-8-csv-files-automatically/6002338#6002338
             });
 
 
