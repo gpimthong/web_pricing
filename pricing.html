@@ -179,7 +179,12 @@
             id="otfb"></span><span><label id="exportcsv" class="custom-file-upload no-print">
                 <input class="no-print" type="button" />
                 Export CSV
-            </label></span></p>
+            </label></span><span>
+                <label class="custom-file-upload no-print">
+                <input class="no-print" type="button" value="Copy table" onclick="selectElementContents( document.getElementById('my-table3') );">
+                Copy
+            </label>
+                </span></p>
 
 
 
@@ -201,6 +206,33 @@
 
     <!-- START JavaScript code -->
     <script>
+
+
+
+        function selectElementContents(el) {
+            var body = document.body, range, sel;
+              if (document.createRange && window.getSelection) {
+                range = document.createRange();
+                sel = window.getSelection();
+                sel.removeAllRanges();
+                try {
+                  range.selectNodeContents(el);
+                  sel.addRange(range);
+                } catch (e) {
+                  range.selectNode(el);
+                  sel.addRange(range);
+                }
+          
+              document.execCommand("copy");
+            } else if (body.createTextRange) {
+              range = body.createTextRange();
+              range.moveToElementText(el);
+              range.select();
+              range.execCommand("Copy");
+          }
+          //alert("Table copied to clipboard. You can now paste it into Excel or another application");
+          }
+
 
         var bill_doc = false;
         var CSVExportData = [];
@@ -416,13 +448,15 @@
 
 
                     var headRow = thead3.insertRow(0);
+                   
                     var cell1 = headRow.insertCell(0);
-
-
+                    cell1.innerHTML = table_data.data0[1][2];
+                    cell1.setAttribute("class", "no-print");
                     //Create array of content
                     CSVExportData.push(['ลำดับ', 'บาร์โค้ด', 'รายการ', 'จำนวน', 'หน่วยขาย', 'ราคาทุน', 'ราคาขาย',])
 
-
+                    headRow = thead3.insertRow(-1);
+                    cell1 = headRow.insertCell(-1);
                     cell1.innerHTML = CSVExportData[0][0];
                     headRow.insertCell(-1).innerHTML = CSVExportData[0][1];
                     headRow.insertCell(-1).innerHTML = CSVExportData[0][2];
@@ -655,10 +689,11 @@
 
             let data = CSVHeder.concat(CSVExportData);
 
-            data.forEach(function (rowArray) {
+            CSVExportData.forEach(function (rowArray) {
                 let row = rowArray.join(",");
                 //need \uFEFF to open correctly with Excel
                 csvContent += '\uFEFF' + row + "\r\n";//https://stackoverflow.com/questions/6002256/is-it-possible-to-force-excel-recognize-utf-8-csv-files-automatically/6002338#6002338
+                //csvContent += row + "\r\n";
             });
 
 
