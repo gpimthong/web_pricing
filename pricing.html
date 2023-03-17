@@ -180,11 +180,12 @@
                 <input class="no-print" type="button" />
                 Export CSV
             </label></span><span>
-                <label class="custom-file-upload no-print">
-                <input class="no-print" type="button" value="Copy table" onclick="selectElementContents( document.getElementById('my-table3') );">
+            <label class="custom-file-upload no-print">
+                <input class="no-print" type="button" value="Copy table"
+                    onclick="selectElementContents( document.getElementById('my-table3') );">
                 Copy
             </label>
-                </span></p>
+        </span></p>
 
 
 
@@ -211,27 +212,27 @@
 
         function selectElementContents(el) {
             var body = document.body, range, sel;
-              if (document.createRange && window.getSelection) {
+            if (document.createRange && window.getSelection) {
                 range = document.createRange();
                 sel = window.getSelection();
                 sel.removeAllRanges();
                 try {
-                  range.selectNodeContents(el);
-                  sel.addRange(range);
+                    range.selectNodeContents(el);
+                    sel.addRange(range);
                 } catch (e) {
-                  range.selectNode(el);
-                  sel.addRange(range);
+                    range.selectNode(el);
+                    sel.addRange(range);
                 }
-          
-              document.execCommand("copy");
+
+                document.execCommand("copy");
             } else if (body.createTextRange) {
-              range = body.createTextRange();
-              range.moveToElementText(el);
-              range.select();
-              range.execCommand("Copy");
-          }
-          //alert("Table copied to clipboard. You can now paste it into Excel or another application");
-          }
+                range = body.createTextRange();
+                range.moveToElementText(el);
+                range.select();
+                range.execCommand("Copy");
+            }
+            //alert("Table copied to clipboard. You can now paste it into Excel or another application");
+        }
 
 
         var bill_doc = false;
@@ -428,8 +429,8 @@
 
 
                     document.getElementById("outgoing-doc").style.display = 'block';
-                    document.getElementById("exportcsv").style.display = 'inline';
-                    document.getElementById("exportcsv").addEventListener('click', exportCSV);
+                    //document.getElementById("exportcsv").style.display = 'inline';
+                    //document.getElementById("exportcsv").addEventListener('click', exportCSV);
 
                     let table3 = document.getElementById("table3");
                     // Create a table element
@@ -448,7 +449,7 @@
 
 
                     var headRow = thead3.insertRow(0);
-                   
+
                     var cell1 = headRow.insertCell(0);
                     cell1.innerHTML = table_data.data0[1][2];
                     cell1.setAttribute("class", "no-print");
